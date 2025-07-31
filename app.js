@@ -1,3 +1,122 @@
+function preprocessCSV(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            try {
+                // Try different encodings
+                const encodings = ['utf-8', 'latin1', 'iso-8859-1', 'cp1252'];
+                let processedData = null;
+                
+                for (const encoding of encodings) {
+                    try {
+                        const decoder = new TextDecoder(encoding);
+                        const data = decoder.decode(new Uint8Array(e.target.result));
+                        
+                        // Parse CSV
+                        const lines = data.split('\n').map(line => 
+                            line.split(',').map(cell => cell.trim())
+                        );
+                        
+                        // Create cleaned CSV content
+                        const cleanedContent = lines.map(line => line.join(',')).join('\n');
+                        
+                        // Create cleaned file
+                        const cleanedFile = new File(
+                            [cleanedContent],
+                            'cleaned_' + file.name,
+                            { type: 'text/csv' }
+                        );
+                        
+                        processedData = {
+                            file: cleanedFile,
+                            content: cleanedContent
+                        };
+                        break;
+                    } catch (error) {
+                        console.log(`Failed with ${encoding} encoding:`, error);
+                        continue;
+                    }
+                }
+                
+                if (processedData) {
+                    resolve(processedData);
+                } else {
+                    reject(new Error("Could not process the file with any encoding"));
+                }
+            } catch (error) {
+                reject(error);
+            }
+        };
+        
+        reader.onerror = () => reject(reader.error);
+        
+        // Read file as array buffer to handle different encodings
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// Modify your existing file upload handling
+document.getElementById('csvFile').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+        // Show loading indicator
+        const loadingMsg = document.createElement('div');
+        loadingMsg.id = 'loadingMessage';
+        loadingMsg.innerHTML = 'Processing file...';
+        loadingMsg.style.color = 'blue';
+        this.parentNode.appendChild(loadingMsg);
+        
+        // Process the file
+        const processedData = await preprocessCSV(file);
+        
+        // Store the processed data for later use
+        window.processedCSVContent = processedData.content;
+        
+        // Update loading message
+        loadingMsg.innerHTML = 'File processed successfully!';
+        loadingMsg.style.color = 'green';
+        
+        // Remove message after 3 seconds
+        setTimeout(() => {
+            loadingMsg.remove();
+        }, 3000);
+        
+    } catch (error) {
+        console.error('Error processing file:', error);
+        alert('Error processing file. Please try another file or encoding.');
+        
+        // Remove loading message if exists
+        const loadingMsg = document.getElementById('loadingMessage');
+        if (loadingMsg) loadingMsg.remove();
+    }
+});
+
+// Modify your generate report function to use the processed content
+function generateReport() {
+    if (!window.processedCSVContent) {
+        alert('Please upload and process a CSV file first');
+        return;
+    }
+    
+    const selectedEmployees = getSelectedEmployees();
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!selectedEmployees.length || !startDate || !endDate) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    try {
+        processAttendanceData(window.processedCSVContent, selectedEmployees, startDate, endDate);
+    } catch (error) {
+        alert('Error generating report: ' + error.message);
+    }
+}
+
 // Add this where you handle the Excel generation
 function processAttendanceData(csv, selectedEmployees, startDate, endDate) {
     try {
