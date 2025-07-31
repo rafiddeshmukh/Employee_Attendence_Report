@@ -7,6 +7,7 @@ function loadEmployees() {
     employees = stored ? JSON.parse(stored) : [];
     displayEmployees();
     updateEmployeeSelect();
+    setupSelectAll();
 }
 
 // Save employees to localStorage
@@ -14,6 +15,27 @@ function saveEmployees() {
     localStorage.setItem('employees', JSON.stringify(employees));
     displayEmployees();
     updateEmployeeSelect();
+}
+
+// Setup Select All functionality
+function setupSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllEmployees');
+    const employeeSelect = document.getElementById('employeeSelect');
+
+    selectAllCheckbox.addEventListener('change', function() {
+        const options = employeeSelect.options;
+        for (let i = 0; i < options.length; i++) {
+            options[i].selected = this.checked;
+        }
+    });
+
+    // Update "Select All" checkbox when individual selections change
+    employeeSelect.addEventListener('change', function() {
+        const options = this.options;
+        const allSelected = Array.from(options).every(option => option.selected);
+        selectAllCheckbox.checked = allSelected;
+        selectAllCheckbox.indeterminate = !allSelected && Array.from(options).some(option => option.selected);
+    });
 }
 
 // Add new employee
@@ -95,6 +117,15 @@ function bulkUpload() {
         }
     };
     reader.readAsText(file);
+}
+
+// Helper function to get selected employees
+function getSelectedEmployees() {
+    const select = document.getElementById('employeeSelect');
+    return Array.from(select.selectedOptions).map(option => ({
+        id: option.value,
+        name: option.text
+    }));
 }
 
 // Load employees when page loads
