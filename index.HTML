@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Report Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        body { padding: 20px; }
+        .container { max-width: 1200px; }
+        .tab-content { padding: 20px 0; }
+        #employeeList { height: 300px; overflow-y: auto; }
+        .employee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Attendance Report Generator</h1>
+
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#report" type="button">Generate Report</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="employees-tab" data-bs-toggle="tab" data-bs-target="#employees" type="button">Manage Employees</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="guide-tab" data-bs-toggle="tab" data-bs-target="#guide" type="button">Guide</button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Report Generator Tab -->
+            <div class="tab-pane fade show active" id="report">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Upload CSV File</label>
+                            <input type="file" class="form-control" id="csvFile" accept=".csv">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Employees</label>
+                            <select class="form-select" id="employeeSelect" multiple size="10"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                        <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Management Tab -->
+            <div class="tab-pane fade" id="employees">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Add Employee</h3>
+                        <div class="mb-3">
+                            <label class="form-label">Employee ID</label>
+                            <input type="text" class="form-control" id="newEmployeeId">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Employee Name</label>
+                            <input type="text" class="form-control" id="newEmployeeName">
+                        </div>
+                        <button class="btn btn-success" onclick="addEmployee()">Add Employee</button>
+                        
+                        <div class="mt-4">
+                            <h3>Bulk Upload</h3>
+                            <input type="file" class="form-control" id="bulkUploadFile" accept=".csv">
+                            <button class="btn btn-primary mt-2" onclick="bulkUpload()">Upload</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h3>Employee List</h3>
+                        <div id="employeeList" class="border rounded p-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guide Tab -->
+            <div class="tab-pane fade" id="guide">
+                <h3>User Guide</h3>
+                <div class="accordion" id="guideAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                CSV File Format
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <p>Your CSV file should have the following columns:</p>
+                                <ul>
+                                    <li>EmployeeID</li>
+                                    <li>FirstName</li>
+                                    <li>Date (format: YYYY-MM-DD or DD/MM/YYYY)</li>
+                                    <li>IN_TIME (format: HH:MM)</li>
+                                    <li>OUT_TIME (format: HH:MM)</li>
+                                </ul>
+                                <p>Example:</p>
+                                <pre>EmployeeID,FirstName,Date,IN_TIME,OUT_TIME
+726070,Hemraj Giri,2025-02-26,06:00,18:00</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                Employee List Format
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <p>For bulk upload, prepare a CSV file with:</p>
+                                <ul>
+                                    <li>EmployeeID</li>
+                                    <li>EmployeeName</li>
+                                </ul>
+                                <p>Example:</p>
+                                <pre>EmployeeID,EmployeeName
+726070,Hemraj Giri
+726063,Bolgani Rajesh</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="employees.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
